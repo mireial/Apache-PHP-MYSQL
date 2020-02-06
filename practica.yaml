@@ -1,0 +1,42 @@
+version: '3.6'
+
+services:
+  db:
+    image: mysql:5.7
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - backend
+    environment:
+      MYSQL_ROOT_PASSWORD: somewordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+
+  redis:
+    image: redis:latest
+    networks:
+      - backend
+
+  wordpress:
+    image: kharex/miwp:latest
+    volumes: 
+      - wordpress_data:/var/www/html
+    networks:
+      - backend
+      - proxy
+    deploy:
+      replicas: 1
+      labels:
+        traefik.port: 80
+        traefik.frontend.rule: "Host:miwp.127.0.0.1.nip.io"
+        traefik.docker.network: 'proxy'
+
+volumes:
+  db_data: 
+  wordpress_data:
+
+networks:
+  backend:
+  proxy:
+    external: true
